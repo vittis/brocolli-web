@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.teste {
+	height: 200px;
+	width: 100px;
+	@apply mt-10;
+}
