@@ -1,8 +1,8 @@
 {
   "postcss.validate": false,
   "css.validate": false,
-  "stylelint.validate": ["css", "less", "postcss", "scss"],
   "scss.validate": false,
+  "stylelint.validate": ["css", "less", "postcss", "scss"],
   "editor.codeActionsOnSave": {
     "source.organizeImports": true,
     "source.fixAll.stylelint": true
