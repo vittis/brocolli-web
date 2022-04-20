@@ -2,6 +2,7 @@ import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import type { AppProps } from "next/app";
 import oldbookGlobal from "../styles/oldbook";
 import "../styles/oldbook.css";
+import { SocketProvider } from "../utils/socketContext";
 
 const theme = extendTheme({
   styles: {
@@ -25,9 +26,11 @@ const theme = extendTheme({
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <ChakraProvider theme={theme}>
-      <Component {...pageProps} />
-    </ChakraProvider>
+    <SocketProvider>
+      <ChakraProvider theme={theme}>
+        <Component {...pageProps} />
+      </ChakraProvider>
+    </SocketProvider>
   );
 }
 

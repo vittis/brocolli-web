@@ -30,6 +30,7 @@ const oldbookGlobal = {
       fontSize: "1.35rem",
     },
     b: {
+      color: "#8b0000",
       fontFamily: "IM Fell DW Pica SC, serif",
     },
     blockquote: {

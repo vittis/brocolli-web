@@ -1,7 +1,8 @@
-import { Button, Input, Text, ToastId, useToast } from "@chakra-ui/react";
+import { Button, Text, ToastId, useToast } from "@chakra-ui/react";
 import type { NextPage } from "next";
-import Script from "next/script";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import Chat from "../components/Chat/chat";
+import { useWsClient } from "../utils/socketContext";
 
 declare global {
   // eslint-disable-next-line no-unused-vars
@@ -11,134 +12,46 @@ declare global {
 }
 
 const Home: NextPage = () => {
-  const [client, setClient] = useState<any>();
-  const [input, setInput] = useState<string>("");
-  const [chatMessages, setChatMessages] = useState<string[]>([]);
   const toast = useToast();
   const matchmakingToast = useRef<ToastId>();
+  console.log("RENDER HOME");
+  const { subscribe, clientState, client } = useWsClient();
+
+  // todo
+  /* useSubscribe("game", (message: any) => {
+    console.log("RECEBI MESSAGE DE GAME", { message });
+  }); */
 
   useEffect(() => {
-    if (!client) {
+    if (clientState !== "connected") {
       return;
     }
-
-    client.on("say", (message) => {
-      console.log("SAY", { message });
-
-      if (message.room === "lobby") {
-        setChatMessages([...chatMessages, message.message]);
-      }
-
-      if (message.room === "matchmaking") {
-        if (message.message === "this room has been deleted") {
-          if (matchmakingToast.current) {
-            toast.close(matchmakingToast.current);
-          }
-        }
-      }
-
-      if (message.room.includes("game")) {
-        if (message.message === "INICIA JOGO") {
-          setChatMessages([...chatMessages, "COMEÇANDO JOGO"]);
-        }
-      }
+    subscribe("game", (message: any) => {
+      console.log("RECEBI MESSAGE DE GAME", { message });
     });
-  }, [client, chatMessages, toast]);
-
-  useEffect(() => {
-    if (!client) {
-      return;
-    }
-
-    client.on("connected", function () {
-      console.log("connected!");
-    });
-
-    client.on("disconnected", function () {
-      console.log("disconnected :(");
-    });
-
-    client.on("alert", function (message) {
-      console.warn("ALERT", { message });
-    });
-
-    client.on("api", function (message) {
-      console.warn("API", { message });
-    });
-
-    client.on("error", function (error) {
-      console.log("error", error.stack);
-    });
-
-    client.on("reconnect", function () {
-      console.log("reconnect");
-    });
-
-    client.on("reconnecting", function () {
-      console.log("reconnecting");
-    });
-
-    client.on("welcome", (message) => {
-      console.log("WELCOME", { message });
-    });
-
-    console.log("connecting...");
-    client.connect((error: any, details: any) => {
-      console.log("details", details);
-      if (error != null) {
-        console.log(error);
-      } else {
-        client.roomAdd("lobby");
-        console.log("joined lobby");
-        console.log(client);
-      }
-    });
-  }, [client]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientState]);
 
   return (
     <>
-      <Script
-        onLoad={() => {
-          const client = new window.ActionheroWebsocketClient({
-            url: "http://localhost:8080",
-          });
-
-          setClient(client);
-        }}
-        src="./ActionheroWebsocketClient.min.js"
-      />
+      <Chat />
 
       <Text as="h1" color="brand.500">
         Potential Brocolli
       </Text>
 
-      <Input value={input} onChange={(e) => setInput(e.target.value)} />
-
-      <Button
-        onClick={() => {
-          client.say("lobby", input);
-          setInput("");
-          // list lobby players
-          /* client.roomView("lobby", (data) => {
-            console.log({ data });
-          }); */
-        }}
-      >
-        aaaaa
-      </Button>
-
       <Button
         colorScheme="brand"
         onClick={() => {
-          client.action("startMatchmaking", {}, (data) => {
+          client?.action("startMatchmaking", {}, (data: any) => {
             console.log({ data });
             if (data.ok && !data.gameHasStarted) {
               matchmakingToast.current = toast({
                 title: "Matchmaking...",
-                description: "xiba",
                 status: "success",
                 duration: null,
                 isClosable: false,
+                position: "top-right",
               });
             }
           });
@@ -146,12 +59,6 @@ const Home: NextPage = () => {
       >
         Matchmaking
       </Button>
-
-      <ul>
-        {chatMessages.map((message, index) => (
-          <li key={index}>{message}</li>
-        ))}
-      </ul>
 
       {/* <Text>
         This is oldbook.css. It&apos;s a single drag and drop css file that
